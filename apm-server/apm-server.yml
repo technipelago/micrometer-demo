@@ -1,0 +1,9 @@
+apm-server:
+  host: "apmserver:8200"
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+setup.template.settings:
+  index:
+    number_of_shards: 3
+    number_of_replicas: 0
+    codec: best_compression

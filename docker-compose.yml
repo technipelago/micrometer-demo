@@ -1,0 +1,63 @@
+version: "3.8"
+
+networks:
+  demo:
+    driver: bridge
+
+services:
+  elasticsearch:
+    image: elastic/elasticsearch:7.17.3
+    environment:
+      TZ: "Europe/Stockholm"
+      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      http.host: "0.0.0.0"
+      transport.host: "127.0.0.1"
+      xpack.security.enabled: "false"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - type: tmpfs
+        target: /usr/share/elasticsearch/data
+    networks:
+      demo:
+
+  kibana:
+    image: elastic/kibana:7.17.3
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      SERVER_PUBLICBASEURL: "http://192.168.1.103:5601"
+      discovery.type: "single-node"
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./kibana/kibana.yml:/etc/kibana/kibana.yml:ro
+    networks:
+      demo:
+
+  apmserver:
+    image: elastic/apm-server:7.17.3
+    environment:
+      http.host: "0.0.0.0"
+      transport.host: "127.0.0.1"
+      xpack.security.enabled: "false"
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./apm-server/apm-server.yml:/etc/apm-server/apm-server.yml:ro
+    networks:
+      demo:
+
+  prometheus:
+    image: prom/prometheus:v2.35.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=10d'
+      - '--web.external-url=http://localhost:9090/'
+    ports:
+      - "9090:9090"
+    volumes:
+    - ./prometheus/config:/etc/prometheus
+    - ./prometheus/data:/prometheus

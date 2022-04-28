@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: demo
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+  endpoint:
+    metrics:
+      enabled: true
+    health:
+      show-details: always
